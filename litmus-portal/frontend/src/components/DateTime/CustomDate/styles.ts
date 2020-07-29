@@ -9,7 +9,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   MuiDialogActionsRoot: {
     display: 'flex',
-    padding: 8,
+    padding: theme.spacing(1),
     justifyContent: 'flexStart',
   },
 }));

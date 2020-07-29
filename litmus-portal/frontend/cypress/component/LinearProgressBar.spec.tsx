@@ -1,6 +1,6 @@
 /// <reference types="Cypress" />
-import React from 'react';
 import { mount } from 'cypress-react-unit-test';
+import React from 'react';
 import LinearProgressBar from '../../src/components/ProgressBar/LinearProgressBar';
 
 describe('Linear Progressbar Testing', () => {

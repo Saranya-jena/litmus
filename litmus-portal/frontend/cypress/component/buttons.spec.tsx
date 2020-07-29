@@ -1,18 +1,35 @@
 /// <reference types="Cypress" />
-import React from 'react';
-import { mount } from 'cypress-react-unit-test';
 import { Typography } from '@material-ui/core';
-import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline';
+import { mount } from 'cypress-react-unit-test';
+import React from 'react';
 import ButtonFilled from '../../src/components/Button/ButtonFilled';
 import ButtonOutline from '../../src/components/Button/ButtonOutline';
 
 describe('Button Filled', () => {
-  it('The button is clickable', () => {
+  it('The button is clickable and color is primary', () => {
     mount(
       <ButtonFilled
-        value={'Test'}
+        isPrimary={true}
         handleClick={() => console.log('Handle Click')}
-      />
+      >
+        <>Test</>
+      </ButtonFilled>
+    );
+
+    cy.get('.MuiButtonBase-root')
+      .first()
+      .should('be.enabled')
+      .click()
+      .log('Button Clicked');
+  });
+  it('The button is clickable and color is secondary', () => {
+    mount(
+      <ButtonFilled
+        isPrimary={false}
+        handleClick={() => console.log('Handle Click')}
+      >
+        <>Test</>
+      </ButtonFilled>
     );
 
     cy.get('.MuiButtonBase-root')

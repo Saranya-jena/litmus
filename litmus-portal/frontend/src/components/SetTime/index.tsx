@@ -57,7 +57,7 @@ const SetTime: React.FC<SetTimeProps> = ({
             style: {
               fontSize: '0.75rem',
               color: '#000000',
-              paddingLeft: 27,
+              paddingLeft: '1.6875rem',
               height: '0.425rem',
             },
             'aria-label': 'change-time',
