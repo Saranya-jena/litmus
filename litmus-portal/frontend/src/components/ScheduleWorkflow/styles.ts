@@ -8,7 +8,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginLeft: theme.spacing(17.5),
     border: 1,
     borderColor: theme.palette.text.disabled,
-    borderRadius: 3,
+    borderRadius: '0.1875rem',
   },
   scHeader: {
     paddingLeft: theme.spacing(3.75),
@@ -132,7 +132,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   select: {
     padding: theme.spacing(2.5),
     border: '1px solid #D1D2D7',
-    borderRadius: 3,
+    borderRadius: '0.1875rem',
     fontSize: '0.75rem',
     height: '2.75rem',
   },
@@ -142,7 +142,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginLeft: theme.spacing(0.2),
     marginRight: theme.spacing(0.2),
     paddingLeft: theme.spacing(1),
-    borderRadius: 1,
+    borderRadius: '0.0625rem',
     '&:hover': {
       background: '#D1D2D7',
     },

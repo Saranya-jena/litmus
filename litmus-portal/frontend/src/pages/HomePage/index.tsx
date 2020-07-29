@@ -43,7 +43,7 @@ const HomePage = () => {
   const { userData } = useSelector((state: RootState) => state);
   const { name } = userData;
   const classes = useStyles();
-  if (userData.email === 'abc') {
+  if (userData.email === '') {
     return <WelcomeModal isOpen />;
   }
   return (
