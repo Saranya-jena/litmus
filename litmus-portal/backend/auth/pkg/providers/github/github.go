@@ -2,6 +2,9 @@ package github
 
 import (
 	"context"
+	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 
 	"golang.org/x/oauth2"
@@ -44,4 +47,24 @@ func GitHub(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	globalToken = token
+
+}
+
+func getGithubData() string {
+	req, reqerr := http.NewRequest("GET", "https://api.github.com/user", nil)
+	if reqerr != nil {
+		log.Panic("API Request creation failed")
+	}
+
+	authorizationHeaderValue := fmt.Sprintf("token %s", globalToken)
+	req.Header.Set("Authorization", authorizationHeaderValue)
+
+	resp, resperr := http.DefaultClient.Do(req)
+	if resperr != nil {
+		log.Panic("Request failed")
+	}
+
+	respbody, _ := ioutil.ReadAll(resp.Body)
+
+	return string(respbody)
 }
