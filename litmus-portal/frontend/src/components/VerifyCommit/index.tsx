@@ -1,22 +1,21 @@
 import { Button, Divider, Link, Modal, Typography } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import bfinance from '../../assets/icons/b-finance.png';
+import { WorkflowData } from '../../models/workflow';
+import { RootState } from '../../redux/reducers';
+import parsed from '../../utils/yamlUtils';
 import AdjustedWeights from '../AdjustedWeights';
 import ButtonFilled from '../Button/ButtonFilled';
 import ButtonOutline from '../Button/ButtonOutline/index';
 import CustomText from '../CustomText';
 import CustomDate from '../DateTime/CustomDate';
 import CustomTime from '../DateTime/CustomTime';
-import useStyles from './styles';
 import YamlEditor from '../YamlEditor/Editor';
-import { WorkflowData } from '../../models/workflow';
-import { RootState } from '../../redux/reducers';
 import {
-  parseYamlValidations,
   AceValidations,
+  parseYamlValidations,
 } from '../YamlEditor/Validations';
-import parsed from '../../utils/yamlUtils';
+import useStyles from './styles';
 
 // refractor needed
 
@@ -94,7 +93,11 @@ function VerifyCommit() {
                 </Typography>
               </div>
             </div>
-            <img src={bfinance} alt="bfinance" className={classes.bfinIcon} />
+            <img
+              src="./icons/b-finance.png"
+              alt="bfinance"
+              className={classes.bfinIcon}
+            />
           </div>
           <Divider />
 
