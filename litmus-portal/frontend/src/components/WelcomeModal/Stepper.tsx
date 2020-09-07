@@ -1,22 +1,23 @@
 import { useMutation } from '@apollo/client/react/hooks';
 import MobileStepper from '@material-ui/core/MobileStepper';
 import React, { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import ButtonFilled from '../Button/ButtonFilled';
 import config from '../../config';
 import { CREATE_USER } from '../../graphql';
 import { RootState } from '../../redux/reducers';
+import {
+  validateConfirmPassword,
+  validateEmail,
+  validateStartEmptySpacing,
+  validateTextEmpty,
+} from '../../utils/validate';
+import ButtonFilled from '../Button/ButtonFilled';
+import ButtonOutline from '../Button/ButtonOutline';
 import InputField from '../InputField';
 import ModalPage from './Modalpage';
 import useStyles from './styles';
-import {
-  validateStartEmptySpacing,
-  validateConfirmPassword,
-  validateEmail,
-} from '../../utils/validate';
-import ButtonOutline from '../Button/ButtonOutline';
 
 interface CStepperProps {
   handleModal: () => void;
@@ -361,8 +362,8 @@ const CStepper: React.FC<CStepperProps> = ({ handleModal }) => {
         return (
           <ModalPage
             renderMenu={
-              <div>
-                <div className={classes.inputArea} data-cy="InputEmail">
+              <div className={classes.passwordSetterDiv}>
+                <div className={classes.inputArea} data-cy="InputName">
                   <InputField
                     label={t('welcomeModel.case-3.label')}
                     required
@@ -376,6 +377,20 @@ const CStepper: React.FC<CStepperProps> = ({ handleModal }) => {
                     }}
                   />
                 </div>
+                <div
+                  className={classes.passwordArea}
+                  data-cy="InputProjectName"
+                >
+                  <InputField
+                    label="Project Name"
+                    value={info.projectName}
+                    required
+                    validationError={validateTextEmpty(info.name)}
+                    handleChange={(event) => {
+                      setData('projectName', event.target.value);
+                    }}
+                  />
+                </div>
                 {selectiveButtons()}
               </div>
             }
@@ -384,6 +399,7 @@ const CStepper: React.FC<CStepperProps> = ({ handleModal }) => {
             setText={t('welcomeModel.case-3.info')}
           />
         );
+
       default:
         return <Link to="/404" />;
     }
@@ -396,7 +412,7 @@ const CStepper: React.FC<CStepperProps> = ({ handleModal }) => {
   return (
     <div>
       <div>
-        {activeStep === 3 ? (
+        {activeStep === 1 ? (
           <div>{getStepContent(activeStep)}</div>
         ) : (
           <div>{getStepContent(activeStep)}</div>
