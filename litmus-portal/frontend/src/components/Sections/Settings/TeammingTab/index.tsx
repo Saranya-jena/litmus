@@ -25,6 +25,7 @@ import {
 import SearchIcon from '@material-ui/icons/Search';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import moment from 'moment';
 import { GET_USER } from '../../../../graphql';
 import { Member, Project } from '../../../../models/project';
 import {
@@ -50,19 +51,6 @@ const StyledTableCell = withStyles((theme: Theme) =>
     },
   })
 )(TableCell);
-
-interface UserData {
-  _id: string;
-  username: string;
-  email: string;
-  name: string;
-  logged_in: boolean; // eslint-disable-line no-eval
-  created_at: string; // eslint-disable-line no-eval
-  updated_at: string; // eslint-disable-line no-eval
-  removed_at: string; // eslint-disable-line no-eval
-  state: string;
-  role: string;
-}
 
 interface FilterOptions {
   search: string;
@@ -100,8 +88,10 @@ const TeammingTab: React.FC = () => {
     search: '',
     role: 'all',
   });
+
   let memberList: Member[] = [];
   let users: Member[] = [];
+
   useEffect(() => {
     if (data?.getUser.username === userData.username) {
       const projectList: Project[] = data?.getUser.projects;
@@ -136,25 +126,16 @@ const TeammingTab: React.FC = () => {
         return dataRow.role === 'Owner';
       });
 
-  const emptyRows =
-    paginationData.rowsPerPage -
-    Math.min(
-      paginationData.rowsPerPage,
-      (filteredData?.length ?? 0) -
-        paginationData.pageNo * paginationData.rowsPerPage
-    );
-
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleClose = () => {
     setAnchorEl(null);
   };
 
+  // Function to display date in format Do MMM,YYYY Hr:MM AM/PM
   const formatDate = (date: string) => {
-    const day = date.slice(0, 16);
-
-    const resDate = `${day}`;
-    return resDate;
+    const day = moment(date).format('Do MMM,YYYY LT');
+    return day;
   };
 
   return (
@@ -402,11 +383,12 @@ const TeammingTab: React.FC = () => {
                         </TableRow>
                       ))
                   ) : (
-                    <></>
-                  )}
-                  {emptyRows > 0 && (
-                    <TableRow style={{ height: 53 * emptyRows }}>
-                      <TableCell colSpan={7} />
+                    <TableRow>
+                      <TableCell colSpan={5}>
+                        <Typography align="center">
+                          No users available
+                        </Typography>
+                      </TableCell>
                     </TableRow>
                   )}
                 </TableBody>

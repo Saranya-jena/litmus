@@ -5,6 +5,7 @@ import {
   TableCell,
   TableContainer,
   TableRow,
+  Typography,
 } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -89,7 +90,13 @@ const SentInvitations: React.FC = () => {
               </TableRow>
             ))
           ) : (
-            <></>
+            <TableRow>
+              <TableCell colSpan={2}>
+                <Typography>
+                  There is no one waiting for your invitation.
+                </Typography>
+              </TableCell>
+            </TableRow>
           )}
         </Table>
       </TableContainer>

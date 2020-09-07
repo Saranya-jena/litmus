@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
   table: {
     maxWidth: '63.75rem',
-    maxHeight: '31.25rem',
+    height: '30.25rem',
     border: `1px solid ${theme.palette.customColors.black(0.05)}`,
   },
   filterOpt: {

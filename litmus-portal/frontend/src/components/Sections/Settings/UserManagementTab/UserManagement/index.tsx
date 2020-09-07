@@ -24,6 +24,7 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import SearchIcon from '@material-ui/icons/Search';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import moment from 'moment';
 import config from '../../../../../config';
 import { RootState } from '../../../../../redux/reducers';
 import ButtonFilled from '../../../../Button/ButtonFilled';
@@ -112,14 +113,6 @@ const UserManagement: React.FC = () => {
       return datarow.logged_in === false;
     });
 
-  const emptyRows =
-    paginationData.rowsPerPage -
-    Math.min(
-      paginationData.rowsPerPage,
-      (filteredData?.length ?? 0) -
-        paginationData.pageNo * paginationData.rowsPerPage
-    );
-
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -127,11 +120,8 @@ const UserManagement: React.FC = () => {
   const [currRow, setCurrRow] = React.useState<UserData>(rows[0]);
 
   const formatDate = (date: string) => {
-    const day = date.slice(8, 10);
-    const month = date.slice(5, 7);
-    const year = date.slice(0, 4);
-    const resDate = `${day}-${month}-${year}`;
-    return resDate;
+    const day = moment(date).format('Do MMM,YYYY LT');
+    return day;
   };
 
   return (
@@ -359,11 +349,12 @@ const UserManagement: React.FC = () => {
                               </TableRow>
                             ))
                         ) : (
-                          <></>
-                        )}
-                        {emptyRows > 0 && (
-                          <TableRow style={{ height: 53 * emptyRows }}>
-                            <TableCell colSpan={7} />
+                          <TableRow>
+                            <TableCell colSpan={5}>
+                              <Typography align="center">
+                                No users available.
+                              </Typography>
+                            </TableCell>
                           </TableRow>
                         )}
                       </TableBody>
