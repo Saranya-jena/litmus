@@ -59,7 +59,7 @@ const Settings: React.FC = () => {
             indicatorColor="secondary"
             textColor="secondary"
           >
-            <Tab label="Account" {...tabProps(0)} />
+            <Tab label="My Account" {...tabProps(0)} disabled />
             <Tab label="Team" {...tabProps(1)} />
             {userData.username === 'admin' ? (
               <Tab label="User Management" {...tabProps(2)} />

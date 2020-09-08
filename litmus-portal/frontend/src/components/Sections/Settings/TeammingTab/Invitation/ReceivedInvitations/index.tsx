@@ -39,12 +39,16 @@ const ReceivedInvitations: React.FC = () => {
   const [rows, setRows] = useState<ReceivedInvitation[]>([]);
 
   const { userData } = useSelector((state: RootState) => state);
-  const [acceptedInviteUser, setAcceptedInviteUser] = useState<string>('');
+
+  // stores the user whose invitation is accepted/declined
+  const [acceptDecline, setAcceptDecline] = useState<string>('');
+
+  // mutation to accept the invitation
   const [acceptInvite] = useMutation(ACCEPT_INVITE, {
     onCompleted: () => {
       setRows(
         rows.filter(function (row) {
-          return row.username !== acceptedInviteUser;
+          return row.username !== acceptDecline;
         })
       );
     },
@@ -54,11 +58,12 @@ const ReceivedInvitations: React.FC = () => {
     ],
   });
 
+  // mutation to decline the invitation
   const [declineInvite] = useMutation(DECLINE_INVITE, {
     onCompleted: () => {
       setRows(
         rows.filter(function (row) {
-          return row.username !== acceptedInviteUser;
+          return row.username !== acceptDecline;
         })
       );
     },
@@ -68,6 +73,7 @@ const ReceivedInvitations: React.FC = () => {
     ],
   });
 
+  // query for getting all the data for the logged in user
   const { data, loading } = useQuery<
     CurrentUserDetails,
     CurrentUserDedtailsVars
@@ -141,7 +147,7 @@ const ReceivedInvitations: React.FC = () => {
                     <div className={classes.buttonDiv}>
                       <ButtonOutline
                         handleClick={() => {
-                          setAcceptedInviteUser(row.username);
+                          setAcceptDecline(row.username);
                           declineInvite({
                             variables: {
                               member: {
@@ -158,7 +164,7 @@ const ReceivedInvitations: React.FC = () => {
                       <ButtonFilled
                         isPrimary={false}
                         handleClick={() => {
-                          setAcceptedInviteUser(row.username);
+                          setAcceptDecline(row.username);
                           acceptInvite({
                             variables: {
                               member: {

@@ -64,12 +64,12 @@ interface PaginationData {
 // TeammingTab displays team member table
 const TeammingTab: React.FC = () => {
   const classes = useStyles();
-
   const { userData } = useSelector((state: RootState) => state);
 
   // for response data
   const [rows, setRows] = useState<Member[]>([]);
 
+  // query for getting all the data for the logged in user
   const { data } = useQuery<CurrentUserDetails, CurrentUserDedtailsVars>(
     GET_USER,
     {
@@ -89,9 +89,11 @@ const TeammingTab: React.FC = () => {
     role: 'all',
   });
 
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  // logic for displaying the team members of the user
   let memberList: Member[] = [];
   let users: Member[] = [];
-
   useEffect(() => {
     if (data?.getUser.username === userData.username) {
       const projectList: Project[] = data?.getUser.projects;
@@ -115,6 +117,7 @@ const TeammingTab: React.FC = () => {
     }
   }, [data]);
 
+  // for data filtering based on user role
   const filteredData =
     rows &&
     rows
@@ -126,8 +129,7 @@ const TeammingTab: React.FC = () => {
         return dataRow.role === 'Owner';
       });
 
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-
+  // for closing the menu option
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -141,9 +143,6 @@ const TeammingTab: React.FC = () => {
   return (
     <div>
       <div className={classes.UMDiv}>
-        <Typography className={classes.headerText}>
-          <strong>Team Name - {userData.selectedProjectID}</strong>
-        </Typography>
         <div className={classes.members}>
           <img src="./icons/user.svg" alt="members" />
           <Typography className={classes.memTypo}>

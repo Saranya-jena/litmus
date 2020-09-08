@@ -56,9 +56,13 @@ const Invite: React.FC<InviteProps> = ({ handleModal }) => {
 
   const { userData } = useSelector((state: RootState) => state);
 
+  // for setting the role of the user while sending invitation
   const [roles, setRoles] = useState<Role[]>([]);
 
+  // Array to store the list of selected users to be invited
   const [selected, setSelected] = React.useState<SelectedUser[]>([]);
+
+  // Sets the user role while inviting
   const setUserRole = (username: string, role: string) => {
     setSelected(
       selected.map((r) => (r.user_name === username ? { ...r, role } : r))
@@ -71,12 +75,16 @@ const Invite: React.FC<InviteProps> = ({ handleModal }) => {
       setRoles([...roles, { username, role }]);
     }
   };
+
+  // query for getting all the data for the logged in user
   const { data: dataB } = useQuery<CurrentUserDetails, CurrentUserDedtailsVars>(
     GET_USER,
     {
       variables: { username: userData.username },
     }
   );
+
+  // query to list all the users
   const memberList = new Map();
   const { data: dataA } = useQuery(ALL_USERS, {
     skip: !dataB,
@@ -93,6 +101,7 @@ const Invite: React.FC<InviteProps> = ({ handleModal }) => {
                 memberList.set(member.user_name, 1)
               )
           );
+          // login for displaying only those users who are not the part of team
           dataA.users.map(
             (data: UserInvite) =>
               !memberList.has(data.username) && users.push(data)
@@ -103,10 +112,12 @@ const Invite: React.FC<InviteProps> = ({ handleModal }) => {
     },
   });
 
+  // mutation to send invitation to selected users
   const [SendInvite, { error: errorB, loading: loadingB }] = useMutation(
     SEND_INVITE
   );
 
+  // Checks if the user the already selected or not
   const isSelected = (user: UserInvite) => {
     const usernames = new Map();
     selected.map((el) => usernames.set(el.user_name, el.role));
@@ -141,7 +152,6 @@ const Invite: React.FC<InviteProps> = ({ handleModal }) => {
         selected.slice(selectedIndex + 1)
       );
     }
-
     setSelected(newSelected);
   };
 
