@@ -23,9 +23,9 @@ import {
   withStyles,
 } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import moment from 'moment';
 import { GET_USER } from '../../../../graphql';
 import { Member, Project } from '../../../../models/project';
 import {
@@ -70,12 +70,12 @@ const TeammingTab: React.FC = () => {
   // for response data
   const [rows, setRows] = useState<Member[]>([]);
 
-  const { data, loading } = useQuery<
-    CurrentUserDetails,
-    CurrentUserDedtailsVars
-  >(GET_USER, {
-    variables: { username: userData.username },
-  });
+  const { data } = useQuery<CurrentUserDetails, CurrentUserDedtailsVars>(
+    GET_USER,
+    {
+      variables: { username: userData.username },
+    }
+  );
 
   // State for pagination
   const [paginationData, setPaginationData] = useState<PaginationData>({
@@ -113,7 +113,7 @@ const TeammingTab: React.FC = () => {
         setRows(users);
       });
     }
-  }, [loading]);
+  }, [data]);
 
   const filteredData =
     rows &&

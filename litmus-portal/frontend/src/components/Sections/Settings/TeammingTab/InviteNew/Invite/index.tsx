@@ -3,6 +3,7 @@ import {
   Input,
   InputAdornment,
   Table,
+  TableCell,
   TableContainer,
   TableRow,
   Toolbar,
@@ -10,7 +11,12 @@ import {
 } from '@material-ui/core';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { ALL_USERS, SEND_INVITE } from '../../../../../../graphql';
+import { ALL_USERS, GET_USER, SEND_INVITE } from '../../../../../../graphql';
+import { Project } from '../../../../../../models/project';
+import {
+  CurrentUserDedtailsVars,
+  CurrentUserDetails,
+} from '../../../../../../models/user';
 import { RootState } from '../../../../../../redux/reducers';
 import ButtonFilled from '../../../../../Button/ButtonFilled';
 import Loader from '../../../../../Loader';
@@ -61,34 +67,44 @@ const Invite: React.FC<InviteProps> = ({ handleModal }) => {
       setRoles(
         roles.map((r) => (r.username === username ? { username, role } : r))
       );
-
-      // console.log(roles);
     } else {
       setRoles([...roles, { username, role }]);
-      // console.log(roles);
     }
   };
-
+  const { data: dataB } = useQuery<CurrentUserDetails, CurrentUserDedtailsVars>(
+    GET_USER,
+    {
+      variables: { username: userData.username },
+    }
+  );
+  const memberList = new Map();
   const { data: dataA } = useQuery(ALL_USERS, {
+    skip: !dataB,
     onCompleted: () => {
-      /*  setRows(data); */
+      const users: UserInvite[] = [];
       if (dataA !== undefined) {
-        // console.log(dataA.users);
-        setRows(dataA.users);
+        if (dataB?.getUser.username === userData.username) {
+          const projectList: Project[] = dataB?.getUser.projects;
+
+          projectList.forEach(
+            (project) =>
+              project.id === userData.selectedProjectID &&
+              project.members.map((member) =>
+                memberList.set(member.user_name, 1)
+              )
+          );
+          dataA.users.map(
+            (data: UserInvite) =>
+              !memberList.has(data.username) && users.push(data)
+          );
+        }
+        setRows(users);
       }
     },
   });
 
   const [SendInvite, { error: errorB, loading: loadingB }] = useMutation(
-    SEND_INVITE,
-    {
-      onCompleted: () => {
-        // console.log('completed');
-      },
-      onError: () => {
-        // console.log('error--->' + errorB);
-      },
-    }
+    SEND_INVITE
   );
 
   const isSelected = (user: UserInvite) => {
@@ -134,12 +150,9 @@ const Invite: React.FC<InviteProps> = ({ handleModal }) => {
     search: '',
   });
 
-  const filteredData =
-    rows !== undefined && rows.length > 0
-      ? rows.filter((dataRow) =>
-          dataRow.name.toLowerCase().includes(filters.search)
-        )
-      : [];
+  const filteredData = rows.filter((dataRow) =>
+    dataRow?.username.toLowerCase().includes(filters.search)
+  );
 
   const [showsuccess, setShowsuccess] = useState<boolean>(false);
 
@@ -253,6 +266,7 @@ const Invite: React.FC<InviteProps> = ({ handleModal }) => {
                 filteredData.map((row, index) => {
                   const isItemSelected = isSelected(row);
                   const labelId = `enhanced-table-checkbox-${index}`;
+
                   return (
                     <TableRow
                       role="checkbox"
@@ -271,7 +285,11 @@ const Invite: React.FC<InviteProps> = ({ handleModal }) => {
                   );
                 })
               ) : (
-                <></>
+                <TableRow>
+                  <TableCell colSpan={2}>
+                    <Typography align="center">No users available.</Typography>
+                  </TableCell>
+                </TableRow>
               )}
             </Table>
           </TableContainer>

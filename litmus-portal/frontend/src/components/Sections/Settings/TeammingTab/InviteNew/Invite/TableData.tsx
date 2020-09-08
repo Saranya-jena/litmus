@@ -48,9 +48,13 @@ const TableData: React.FC<TableDataProps> = ({
               className={classes.avatarBackground}
               style={{ alignContent: 'right' }}
             >
-              {row.name.split(' ')[1]
-                ? userAvatar(row.name, false)
-                : userAvatar(row.name, true)}
+              {row.name !== null
+                ? row.name.split(' ')[1]
+                  ? userAvatar(row.name, false)
+                  : userAvatar(row.name, true)
+                : row.username.split(' ')[1]
+                ? userAvatar(row.username, false)
+                : userAvatar(row.username, true)}
             </Avatar>
             <div className={classes.detail}>
               <div> {row.username}</div>
