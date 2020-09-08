@@ -1,7 +1,6 @@
 export interface UserData {
   selectedProjectID: string;
   username: string;
-  exp: number;
   token: string;
 }
 

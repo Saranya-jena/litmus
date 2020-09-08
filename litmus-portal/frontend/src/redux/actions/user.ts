@@ -1,25 +1,22 @@
-/* eslint-disable import/prefer-default-export */
-import { UserActions } from '../../models/redux/user';
+import { UserAction, UserActions } from '../../models/redux/user';
 
-export const setUserDetails = (jwt: string) => (dispatch: Function) => {
-  dispatch({
+export function setUserDetails(jwt: string): UserAction {
+  return {
     type: UserActions.LOAD_USER_DETAILS,
     payload: jwt,
-  });
-};
+  };
+}
 
-export const updateUserDetails = (data: { selectedProjectID: string }) => (
-  dispatch: Function
-) => {
-  dispatch({
+export function updateUserDetails(selectedProjectID: string): UserAction {
+  return {
     type: UserActions.UPDATE_USER_DETAILS,
-    payload: data,
-  });
-};
+    payload: selectedProjectID,
+  };
+}
 
-export const userLogout = () => (dispatch: Function) => {
-  dispatch({
+export function userLogout(): UserAction {
+  return {
     type: UserActions.LOGOUT_USER,
     payload: '',
-  });
-};
+  };
+}

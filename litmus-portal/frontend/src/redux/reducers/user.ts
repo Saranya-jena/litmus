@@ -8,7 +8,6 @@ const initialState: UserData = {
   selectedProjectID: '',
   token: '',
   username: '',
-  exp: 0,
 };
 
 export const userData = createReducer<UserData>(initialState, {
@@ -32,7 +31,7 @@ export const userData = createReducer<UserData>(initialState, {
   [UserActions.UPDATE_USER_DETAILS](state: UserData, action: UserAction) {
     return {
       ...state,
-      ...(action.payload as Object),
+      selectedProjectID: action.payload,
     };
   },
   [UserActions.LOGOUT_USER](state: UserData, action: UserAction) {
