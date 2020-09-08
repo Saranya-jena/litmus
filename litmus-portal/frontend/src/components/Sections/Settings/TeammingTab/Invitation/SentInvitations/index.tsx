@@ -27,6 +27,7 @@ const SentInvitations: React.FC = () => {
 
   const { userData } = useSelector((state: RootState) => state);
 
+  // query for getting all the data for the logged in user
   const { data, loading } = useQuery<
     CurrentUserDetails,
     CurrentUserDedtailsVars

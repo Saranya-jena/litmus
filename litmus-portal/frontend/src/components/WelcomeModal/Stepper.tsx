@@ -11,7 +11,6 @@ import {
   validateConfirmPassword,
   validateEmail,
   validateStartEmptySpacing,
-  validateTextEmpty,
 } from '../../utils/validate';
 import ButtonFilled from '../Button/ButtonFilled';
 import ButtonOutline from '../Button/ButtonOutline';
@@ -374,20 +373,6 @@ const CStepper: React.FC<CStepperProps> = ({ handleModal }) => {
                     validationError={validateEmail(info.email)}
                     handleChange={(event) => {
                       setData('email', event.target.value);
-                    }}
-                  />
-                </div>
-                <div
-                  className={classes.passwordArea}
-                  data-cy="InputProjectName"
-                >
-                  <InputField
-                    label="Project Name"
-                    value={info.projectName}
-                    required
-                    validationError={validateTextEmpty(info.name)}
-                    handleChange={(event) => {
-                      setData('projectName', event.target.value);
                     }}
                   />
                 </div>
