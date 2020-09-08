@@ -27,11 +27,12 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { GET_USER } from '../../../../graphql';
-import { Member, Project } from '../../../../models/project';
 import {
   CurrentUserDedtailsVars,
   CurrentUserDetails,
-} from '../../../../models/user';
+  Member,
+  Project,
+} from '../../../../models/graphql/user';
 import { RootState } from '../../../../redux/reducers';
 import userAvatar from '../../../../utils/user';
 import DelUser from '../UserManagementTab/EditUser/DelUser';

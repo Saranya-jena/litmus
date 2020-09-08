@@ -14,11 +14,11 @@ import {
   DECLINE_INVITE,
   GET_USER,
 } from '../../../../../../graphql';
-import { Project } from '../../../../../../models/project';
 import {
   CurrentUserDedtailsVars,
   CurrentUserDetails,
-} from '../../../../../../models/user';
+  Project,
+} from '../../../../../../models/graphql/user';
 import { RootState } from '../../../../../../redux/reducers';
 import userAvatar from '../../../../../../utils/user';
 import ButtonFilled from '../../../../../Button/ButtonFilled';

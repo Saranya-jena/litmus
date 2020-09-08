@@ -7,12 +7,12 @@ import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import CustomBreadCrumbs from '../../../components/BreadCrumbs';
 import { GET_USER } from '../../../graphql';
-import { Message, NotificationIds, Project } from '../../../models/header';
 import {
   CurrentUserDedtailsVars,
   CurrentUserDetails,
-  UserData,
-} from '../../../models/user';
+} from '../../../models/graphql/user';
+import { Message, NotificationIds, Project } from '../../../models/header';
+import { UserData } from '../../../models/redux/user';
 import { RootState } from '../../../redux/reducers';
 import NotificationsDropdown from './NotificationDropdown';
 import ProfileDropdownSection from './ProfileDropdownSection';

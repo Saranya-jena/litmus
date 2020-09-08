@@ -1,17 +1,17 @@
+import { useQuery } from '@apollo/client';
 import { Button, Typography } from '@material-ui/core';
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { useQuery } from '@apollo/client';
+import Unimodal from '../../../../../containers/layouts/Unimodal';
+import { GET_USER } from '../../../../../graphql';
 import {
-  UserData,
-  CurrentUserDetails,
   CurrentUserDedtailsVars,
-} from '../../../../../models/user';
+  CurrentUserDetails,
+} from '../../../../../models/graphql/user';
+import { UserData } from '../../../../../models/redux/user';
 import { RootState } from '../../../../../redux/reducers';
 import UserDetails from '../../UserManagementTab/CreateUser/UserDetails';
 import useStyles from './styles';
-import Unimodal from '../../../../../containers/layouts/Unimodal';
-import { GET_USER } from '../../../../../graphql';
 
 interface personaData {
   email: string;

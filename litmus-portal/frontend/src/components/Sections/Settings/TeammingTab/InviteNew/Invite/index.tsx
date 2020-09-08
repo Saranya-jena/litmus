@@ -12,11 +12,11 @@ import {
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ALL_USERS, GET_USER, SEND_INVITE } from '../../../../../../graphql';
-import { Project } from '../../../../../../models/project';
 import {
   CurrentUserDedtailsVars,
   CurrentUserDetails,
-} from '../../../../../../models/user';
+  Project,
+} from '../../../../../../models/graphql/user';
 import { RootState } from '../../../../../../redux/reducers';
 import ButtonFilled from '../../../../../Button/ButtonFilled';
 import Loader from '../../../../../Loader';
