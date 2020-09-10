@@ -61,15 +61,11 @@ const DelUser: React.FC<DelUserProps> = ({
             </>
           ) : (
             <div
-              role="button"
-              tabIndex={0}
-              onKeyDown={() => {
-                setOpen(true);
-              }}
+              // role="button"
+              // tabIndex={0}
+              // onKeyDown={() => {}}
               className={classes.delDiv}
-              onClick={() => {
-                setOpen(true);
-              }}
+              // onClick={() => {}}
             >
               <img src="./icons/bin.svg" alt="delete" className={classes.bin} />
               <Typography>Delete user </Typography>
