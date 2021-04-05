@@ -22,6 +22,7 @@ import QuickActionCard from './QuickActionCard';
 import ResilienceScoreCard from './ResilienceScoreCard';
 import useStyles from './styles';
 import TotalWorkflows from './TotalWorkflows';
+import WorkflowSection from './WorkFlowSection';
 
 interface Analyticsdata {
   avgWorkflows: number;
@@ -249,6 +250,19 @@ const ReturningHome: React.FC<ReturningHomeProps> = ({
     callbackToSetDataPresent(workflowDataPresent);
   }, [workflowDataPresent]);
 
+  // For schedule a workflow button
+  // const handleScheduleWorkflow = () => {
+  //   workflowAction.setWorkflowDetails({
+  //     isCustomWorkflow: false,
+  //     customWorkflows: [],
+  //   });
+  //   template.selectTemplate({ selectedTemplateID: 0, isDisable: true });
+  //   history.push({
+  //     pathname: '/create-workflow',
+  //     search: `?projectID=${projectID}&projectRole=${userRole}`,
+  //   });
+  // };
+
   return (
     <div>
       {/* Row 1 */}
@@ -294,6 +308,7 @@ const ReturningHome: React.FC<ReturningHomeProps> = ({
           </Grid>
         </div>
       )}
+      <WorkflowSection />
     </div>
   );
 };

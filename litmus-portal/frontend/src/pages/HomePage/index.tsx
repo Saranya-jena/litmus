@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Scaffold from '../../containers/layouts/Scaffold';
 import { getUsername } from '../../utils/auth';
-import LandingHome from '../../views/Home/LandingHome';
 import ReturningHome from '../../views/Home/ReturningHome';
 import useStyles from './styles';
 
@@ -17,16 +16,16 @@ const HomePage: React.FC = () => {
       <Typography variant="h3" className={classes.userName}>
         {t('home.heading')} {getUsername()}
       </Typography>
-      {dataPresent ? (
-        <ReturningHome
-          callbackToSetDataPresent={(dataPresent: boolean) => {
-            setDataPresent(dataPresent);
-          }}
-          currentStatus={dataPresent}
-        />
-      ) : (
+      {/* {!dataPresent ? ( */}
+      <ReturningHome
+        callbackToSetDataPresent={(dataPresent: boolean) => {
+          setDataPresent(dataPresent);
+        }}
+        currentStatus={dataPresent}
+      />
+      {/* ) : (
         <LandingHome />
-      )}
+      )} */}
     </Scaffold>
   );
 };
