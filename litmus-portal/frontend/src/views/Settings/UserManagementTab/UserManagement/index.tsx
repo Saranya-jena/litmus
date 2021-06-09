@@ -18,12 +18,13 @@ import {
   TextField,
   Theme,
   Toolbar,
+  Tooltip,
   Typography,
   withStyles,
 } from '@material-ui/core';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import SearchIcon from '@material-ui/icons/Search';
-import { ButtonFilled, LightPills } from 'litmus-ui';
+import { ButtonFilled } from 'litmus-ui';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -129,6 +130,11 @@ const UserManagement: React.FC = () => {
     const day = moment(date).format('Do MMM, YYYY LT');
     return day;
   };
+
+  function getStatusVariant(loggedIn: boolean): string {
+    if (loggedIn) return classes.loggedIn;
+    return classes.loggedOut;
+  }
 
   return (
     <div>
@@ -291,7 +297,7 @@ const UserManagement: React.FC = () => {
                                   scope="row"
                                 >
                                   <div className={classes.firstCol}>
-                                    {row.logged_in ? (
+                                    {/* {row.logged_in ? (
                                       <LightPills
                                         variant="success"
                                         label={t(
@@ -305,7 +311,30 @@ const UserManagement: React.FC = () => {
                                           'settings.userManagementTab.label.options.notSignedIn'
                                         )}
                                       />
-                                    )}
+                                    )} */}
+                                    <Tooltip
+                                      classes={{
+                                        tooltip: classes.tooltip,
+                                      }}
+                                      disableFocusListener
+                                      placement="bottom"
+                                      title={
+                                        <Typography>
+                                          {row.logged_in
+                                            ? t(
+                                                'settings.userManagementTab.label.options.signedIn'
+                                              )
+                                            : t(
+                                                'settings.userManagementTab.label.options.notSignedIn'
+                                              )}
+                                        </Typography>
+                                      }
+                                    >
+                                      <svg viewBox="0 0 5 5">
+                                        <circle className={classes.loggedIn} />
+                                      </svg>
+                                    </Tooltip>
+
                                     {row.name}
                                   </div>
                                 </TableCell>

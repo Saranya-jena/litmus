@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -259,6 +260,10 @@ func (r *mutationResolver) DeleteDashboard(ctx context.Context, dbID *string) (b
 
 func (r *mutationResolver) DeleteDataSource(ctx context.Context, input model.DeleteDSInput) (bool, error) {
 	return analyticsHandler.DeleteDataSource(input)
+}
+
+func (r *mutationResolver) GetHeatmapData(ctx context.Context, projectID string, workflowID string, year int) ([][]*model.WorkflowRunsData, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) CreateManifestTemplate(ctx context.Context, templateInput *model.TemplateInput) (*model.ManifestTemplate, error) {
@@ -560,3 +565,13 @@ func (r *Resolver) Subscription() generated.SubscriptionResolver { return &subsc
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type subscriptionResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//    it when you're done.
+//  - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *queryResolver) GetHeatmapData(ctx context.Context, projectID string, workflowID string, year int) ([][]*model.WorkflowRunsData, error) {
+	return analyticsHandler.GetHeatMapData(workflowID, projectID, year)
+}

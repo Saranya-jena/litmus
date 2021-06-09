@@ -84,6 +84,22 @@ const useStyles = makeStyles((theme: Theme) => ({
     alignItems: 'center',
     maxWidth: '17.56rem',
     marginLeft: theme.spacing(3),
+    '& svg': {
+      width: '2.75rem',
+    },
+
+    '& circle': {
+      r: '0.5',
+      cx: '2.5',
+      cy: '2.5',
+    },
+  },
+  tooltip: {
+    padding: theme.spacing(3.75, 1.875),
+    maxWidth: '12.5rem',
+    color: theme.palette.text.primary,
+    background: theme.palette.background.paper,
+    boxShadow: `0px 0.6px 1.8px rgba(0, 0, 0, 0.1), 0px 3.2px 7.2px rgba(0, 0, 0, 0.13)`,
   },
   otherTC: {
     maxWidth: '15.375rem',
@@ -111,6 +127,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   dateDiv: {
     display: 'flex',
+  },
+  loggedIn: {
+    fill: theme.palette.success.main,
+  },
+  loggedOut: {
+    fill: theme.palette.error.main,
   },
 }));
 export default useStyles;

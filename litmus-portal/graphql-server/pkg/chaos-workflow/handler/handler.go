@@ -213,7 +213,7 @@ func QueryWorkflowRuns(input model.GetWorkflowRunsInput) (*model.GetWorkflowsOut
 
 		// Filtering based on date range
 		if input.Filter.DateRange != nil {
-			endDate := string(time.Now().Unix())
+			endDate := strconv.FormatInt(time.Now().Unix(), 10)
 			if input.Filter.DateRange.EndDate != nil {
 				endDate = *input.Filter.DateRange.EndDate
 			}
