@@ -10,13 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"go.mongodb.org/mongo-driver/mongo"
-
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 
 	"github.com/jinzhu/copier"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/google/uuid"
 	"github.com/litmuschaos/litmus/litmus-portal/graphql-server/graph/model"
@@ -62,32 +61,52 @@ func CreateChaosWorkflow(ctx context.Context, input *model.ChaosWorkFlowInput, r
 	}, nil
 }
 
-func DeleteWorkflow(ctx context.Context, workflow_id string, r *store.StateData) (bool, error) {
-	query := bson.D{{Key: "workflow_id", Value: workflow_id}}
-	workflows, err := dbOperationsWorkflow.GetWorkflows(query)
-	if len(workflows) == 0 {
-		return false, errors.New("no such workflow found")
-	}
-
-	wf := model.ChaosWorkFlowInput{
-		ProjectID:    workflows[0].ProjectID,
-		WorkflowID:   &workflows[0].WorkflowID,
-		WorkflowName: workflows[0].WorkflowName,
-	}
-
-	// gitOps delete
-	err = gitOpsHandler.DeleteWorkflowFromGit(ctx, &wf)
-	if err != nil {
-		log.Print("Error performing git push: ", err)
-		return false, err
-	}
-
-	err = ops.ProcessWorkflowDelete(query, r)
+func DeleteWorkflow(ctx context.Context, workflow_id *string, workflowRunID *string, r *store.StateData) (bool, error) {
+	query := bson.D{{"workflow_id", workflow_id}}
+	workflow, err := dbOperationsWorkflow.GetWorkflow(query)
 	if err != nil {
 		return false, err
 	}
 
-	return true, nil
+	if *workflow_id != "" && *workflowRunID != "" {
+		for _, workflow_run := range workflow.WorkflowRuns {
+			if workflow_run.WorkflowRunID == *workflowRunID {
+				bool_true := true
+				workflow_run.IsRemoved = &bool_true
+			}
+		}
+
+		err = ops.ProcessWorkflowRunDelete(query, workflowRunID, workflow, r)
+		if err != nil {
+			return false, err
+		}
+
+		return true, nil
+
+	} else if *workflow_id != "" && *workflowRunID == "" {
+		wf := model.ChaosWorkFlowInput{
+			ProjectID:    workflow.ProjectID,
+			WorkflowID:   &workflow.WorkflowID,
+			WorkflowName: workflow.WorkflowName,
+		}
+
+		// gitOps delete
+		err = gitOpsHandler.DeleteWorkflowFromGit(ctx, &wf)
+		if err != nil {
+			log.Print("Error performing git push: ", err)
+			return false, err
+		}
+
+		err = ops.ProcessWorkflowDelete(query, workflow, r)
+		if err != nil {
+			return false, err
+		}
+
+		return true, nil
+
+	}
+
+	return false, err
 }
 
 func UpdateWorkflow(ctx context.Context, input *model.ChaosWorkFlowInput, r *store.StateData) (*model.ChaosWorkFlowResponse, error) {
@@ -124,12 +143,12 @@ func QueryWorkflowRuns(input model.GetWorkflowRunsInput) (*model.GetWorkflowsOut
 	var pipeline mongo.Pipeline
 
 	// Match with projectID
-	matchStage := bson.D{
+	matchProjectIdStage := bson.D{
 		{"$match", bson.D{
 			{"project_id", input.ProjectID},
 		}},
 	}
-	pipeline = append(pipeline, matchStage)
+	pipeline = append(pipeline, matchProjectIdStage)
 
 	includeAllFromWorkflow := bson.D{
 		{"workflow_id", 1},
@@ -147,6 +166,22 @@ func QueryWorkflowRuns(input model.GetWorkflowRunsInput) (*model.GetWorkflowsOut
 		{"cluster_type", 1},
 		{"isRemoved", 1},
 	}
+
+	// Filter the available workflows where isRemoved is false
+	matchWfRunIsRemovedStage := bson.D{
+		{"$project", append(includeAllFromWorkflow,
+			bson.E{Key: "workflow_runs", Value: bson.D{
+				{"$filter", bson.D{
+					{"input", "$workflow_runs"},
+					{"as", "wfRun"},
+					{"cond", bson.D{
+						{"$eq", bson.A{"$$wfRun.isRemoved", false}},
+					}},
+				}},
+			}},
+		)},
+	}
+	pipeline = append(pipeline, matchWfRunIsRemovedStage)
 
 	// Match the pipelineIds from the input array
 	if len(input.WorkflowRunIds) != 0 {
@@ -317,12 +352,15 @@ func QueryWorkflowRuns(input model.GetWorkflowRunsInput) (*model.GetWorkflowsOut
 
 	// Call aggregation on pipeline
 	workflowsCursor, err := dbOperationsWorkflow.GetAggregateWorkflows(pipeline)
+	if err != nil {
+		return nil, err
+	}
 
 	var result []*model.WorkflowRun
 
 	var workflows []dbSchemaWorkflow.AggregatedWorkflowRuns
 
-	if err = workflowsCursor.All(context.Background(), &workflows); err != nil {
+	if err = workflowsCursor.All(context.Background(), &workflows); err != nil || len(workflows) == 0 {
 		fmt.Println(err)
 		return &model.GetWorkflowsOutput{
 			TotalNoOfWorkflowRuns: 0,
@@ -347,94 +385,167 @@ func QueryWorkflowRuns(input model.GetWorkflowRunsInput) (*model.GetWorkflowsOut
 			ExecutionData:     workflowRun.ExecutionData,
 			ClusterName:       workflow.ClusterName,
 			ClusterType:       &workflow.ClusterType,
+			IsRemoved:         workflowRun.IsRemoved,
 		}
 		result = append(result, &newWorkflowRun)
 	}
 
-	totalFilteredWorkflowRuns := 0
+	totalFilteredWorkflowRunsCounter := 0
 	if len(workflows) > 0 && len(workflows[0].TotalFilteredWorkflowRuns) > 0 {
-		totalFilteredWorkflowRuns = workflows[0].TotalFilteredWorkflowRuns[0].Count
+		totalFilteredWorkflowRunsCounter = workflows[0].TotalFilteredWorkflowRuns[0].Count
 	}
 
 	output := model.GetWorkflowsOutput{
-		TotalNoOfWorkflowRuns: totalFilteredWorkflowRuns,
+		TotalNoOfWorkflowRuns: totalFilteredWorkflowRunsCounter,
 		WorkflowRuns:          result,
 	}
 	return &output, nil
 }
 
-// Deprecated
-func QueryWorkflows(project_id string) ([]*model.ScheduledWorkflows, error) {
-	chaosWorkflows, err := dbOperationsWorkflow.GetWorkflows(bson.D{{"project_id", project_id}})
-	if err != nil {
-		return nil, err
-	}
-
-	result := []*model.ScheduledWorkflows{}
-	for _, workflow := range chaosWorkflows {
-		cluster, err := dbOperationsCluster.GetCluster(workflow.ClusterID)
-		if err != nil {
-			return nil, err
-		}
-		if workflow.IsRemoved == false {
-			var Weightages []*model.Weightages
-			copier.Copy(&Weightages, &workflow.Weightages)
-
-			newChaosWorkflows := model.ScheduledWorkflows{
-				WorkflowType:        string(workflow.WorkflowType),
-				WorkflowID:          workflow.WorkflowID,
-				WorkflowManifest:    workflow.WorkflowManifest,
-				WorkflowName:        workflow.WorkflowName,
-				CronSyntax:          workflow.CronSyntax,
-				WorkflowDescription: workflow.WorkflowDescription,
-				Weightages:          Weightages,
-				IsCustomWorkflow:    workflow.IsCustomWorkflow,
-				UpdatedAt:           workflow.UpdatedAt,
-				CreatedAt:           workflow.CreatedAt,
-				ProjectID:           workflow.ProjectID,
-				IsRemoved:           workflow.IsRemoved,
-				ClusterName:         cluster.ClusterName,
-				ClusterID:           cluster.ClusterID,
-				ClusterType:         cluster.ClusterType,
-			}
-			result = append(result, &newChaosWorkflows)
-		}
-	}
-
-	return result, nil
-}
-
 // QueryListWorkflow returns all the workflows present in the given project
-func QueryListWorkflow(project_id string, workflowIds []*string) ([]*model.Workflow, error) {
-	var query bson.D
-	if len(workflowIds) != 0 {
-		query = bson.D{
-			{"project_id", project_id},
-			{"workflow_id", bson.M{"$in": workflowIds}},
+func QueryListWorkflow(workflowInput model.ListWorkflowsInput) (*model.ListWorkflowsOutput, error) {
+	var pipeline mongo.Pipeline
+
+	// Match with projectID
+	matchProjectIdStage := bson.D{
+		{"$match", bson.D{
+			{"project_id", workflowInput.ProjectID},
+		}},
+	}
+	pipeline = append(pipeline, matchProjectIdStage)
+
+	// Match the pipelineIds from the input array
+	if len(workflowInput.WorkflowIds) != 0 {
+		matchWfIdStage := bson.D{
+			{"$match", bson.D{
+				{"workflow_id", bson.D{
+					{"$in", workflowInput.WorkflowIds},
+				}},
+			}},
 		}
-	} else {
-		query = bson.D{
-			{"project_id", project_id},
+
+		pipeline = append(pipeline, matchWfIdStage)
+	}
+
+	// Filtering out the workflows that are deleted/removed
+	matchWfIsRemovedStage := bson.D{
+		{"$match", bson.D{
+			{"isRemoved", bson.D{
+				{"$eq", false},
+			}},
+		}},
+	}
+	pipeline = append(pipeline, matchWfIsRemovedStage)
+
+	// Filtering based on multiple parameters
+	if workflowInput.Filter != nil {
+
+		// Filtering based on workflow name
+		if workflowInput.Filter.WorkflowName != nil && *workflowInput.Filter.WorkflowName != "" {
+			matchWfNameStage := bson.D{
+				{"$match", bson.D{
+					{"workflow_name", bson.D{
+						{"$regex", workflowInput.Filter.WorkflowName},
+					}},
+				}},
+			}
+			pipeline = append(pipeline, matchWfNameStage)
+		}
+
+		// Filtering based on cluster name
+		if workflowInput.Filter.ClusterName != nil && *workflowInput.Filter.ClusterName != "All" && *workflowInput.Filter.ClusterName != "" {
+			matchClusterStage := bson.D{
+				{"$match", bson.D{
+					{"cluster_name", workflowInput.Filter.ClusterName},
+				}},
+			}
+			pipeline = append(pipeline, matchClusterStage)
 		}
 	}
-	chaosWorkflows, err := dbOperationsWorkflow.GetWorkflows(query)
 
+	var sortStage bson.D
+
+	switch {
+	case workflowInput.Sort != nil && workflowInput.Sort.Field == model.WorkflowSortingFieldName:
+		// Sorting based on WorkflowName time
+		if workflowInput.Sort.Descending != nil && *workflowInput.Sort.Descending {
+			sortStage = bson.D{
+				{"$sort", bson.D{
+					{"workflow_name", -1},
+				}},
+			}
+		} else {
+			sortStage = bson.D{
+				{"$sort", bson.D{
+					{"workflow_name", 1},
+				}},
+			}
+		}
+	default:
+		// Default sorting: sorts it by LastUpdated time in descending order
+		sortStage = bson.D{
+			{"$sort", bson.D{
+				{"updated_at", -1},
+			}},
+		}
+	}
+
+	// Pagination
+	paginatedWorkflows := bson.A{
+		sortStage,
+	}
+
+	if workflowInput.Pagination != nil {
+		paginationSkipStage := bson.D{
+			{"$skip", workflowInput.Pagination.Page * workflowInput.Pagination.Limit},
+		}
+		paginationLimitStage := bson.D{
+			{"$limit", workflowInput.Pagination.Limit},
+		}
+
+		paginatedWorkflows = append(paginatedWorkflows, paginationSkipStage, paginationLimitStage)
+	}
+
+	// Add two stages where we first count the number of filtered workflow and then paginate the results
+	facetStage := bson.D{
+		{"$facet", bson.D{
+			{"total_filtered_workflows", bson.A{
+				bson.D{{"$count", "count"}},
+			}},
+			{"scheduled_workflows", paginatedWorkflows},
+		}},
+	}
+	pipeline = append(pipeline, facetStage)
+
+	// Call aggregation on pipeline
+	workflowsCursor, err := dbOperationsWorkflow.GetAggregateWorkflows(pipeline)
 	if err != nil {
 		return nil, err
 	}
+
 	var result []*model.Workflow
-	for _, workflow := range chaosWorkflows {
+
+	var workflows []dbSchemaWorkflow.AggregatedWorkflows
+
+	if err = workflowsCursor.All(context.Background(), &workflows); err != nil || len(workflows) == 0 {
+		return &model.ListWorkflowsOutput{
+			TotalNoOfWorkflows: 0,
+			Workflows:          result,
+		}, nil
+	}
+
+	for _, workflow := range workflows[0].ScheduledWorkflows {
 		cluster, err := dbOperationsCluster.GetCluster(workflow.ClusterID)
 		if err != nil {
 			return nil, err
 		}
+
 		var Weightages []*model.Weightages
 		copier.Copy(&Weightages, &workflow.Weightages)
 		var WorkflowRuns []*model.WorkflowRuns
 		copier.Copy(&WorkflowRuns, &workflow.WorkflowRuns)
 
 		newChaosWorkflows := model.Workflow{
-			WorkflowType:        string(workflow.WorkflowType),
 			WorkflowID:          workflow.WorkflowID,
 			WorkflowManifest:    workflow.WorkflowManifest,
 			WorkflowName:        workflow.WorkflowName,
@@ -453,7 +564,17 @@ func QueryListWorkflow(project_id string, workflowIds []*string) ([]*model.Workf
 		}
 		result = append(result, &newChaosWorkflows)
 	}
-	return result, nil
+
+	totalFilteredWorkflowsCounter := 0
+	if len(workflows) > 0 && len(workflows[0].TotalFilteredWorkflows) > 0 {
+		totalFilteredWorkflowsCounter = workflows[0].TotalFilteredWorkflows[0].Count
+	}
+
+	output := model.ListWorkflowsOutput{
+		TotalNoOfWorkflows: totalFilteredWorkflowsCounter,
+		Workflows:          result,
+	}
+	return &output, nil
 }
 
 // WorkFlowRunHandler Updates or Inserts a new Workflow Run into the DB
@@ -478,6 +599,7 @@ func WorkFlowRunHandler(input model.WorkflowRunInput, r store.StateData) (string
 	}
 
 	count := 0
+	isRemoved := false
 	count, err = dbOperationsWorkflow.UpdateWorkflowRun(input.WorkflowID, dbSchemaWorkflow.ChaosWorkflowRun{
 		WorkflowRunID:     input.WorkflowRunID,
 		LastUpdated:       strconv.FormatInt(time.Now().Unix(), 10),
@@ -487,7 +609,9 @@ func WorkFlowRunHandler(input model.WorkflowRunInput, r store.StateData) (string
 		TotalExperiments:  &executionData.TotalExperiments,
 		ExecutionData:     input.ExecutionData,
 		Completed:         input.Completed,
+		IsRemoved:         &isRemoved,
 	})
+
 	if err != nil {
 		log.Print("ERROR", err)
 		return "", err
@@ -510,6 +634,7 @@ func WorkFlowRunHandler(input model.WorkflowRunInput, r store.StateData) (string
 		TotalExperiments:  &executionData.TotalExperiments,
 		ExecutionData:     input.ExecutionData,
 		WorkflowID:        input.WorkflowID,
+		IsRemoved:         &isRemoved,
 	}, &r)
 
 	return "Workflow Run Accepted", nil
@@ -591,7 +716,7 @@ func ReRunWorkflow(workflowID string) (string, error) {
 		WorkflowManifest: workflows[0].WorkflowManifest,
 		ProjectID:        workflows[0].ProjectID,
 		ClusterID:        workflows[0].ClusterID,
-	}, "create", store.Store)
+	}, nil, "create", store.Store)
 
 	return "Request for re-run acknowledged, workflowID: " + workflowID, nil
 }
@@ -722,4 +847,29 @@ func IsTemplateAvailable(ctx context.Context, templateName string, projectID str
 		}
 	}
 	return false, nil
+}
+
+func SyncWorkflowRun(ctx context.Context, workflow_id string, workflowRunID string, r *store.StateData) (bool, error) {
+
+	query := bson.D{{"workflow_id", workflow_id}}
+	workflow, err := dbOperationsWorkflow.GetWorkflow(query)
+	if err != nil {
+		return false, err
+	}
+
+	for _, workflow_run := range workflow.WorkflowRuns {
+		if workflow.IsRemoved == true {
+			return false, errors.New("workflow has been removed")
+		}
+
+		if workflow_run.WorkflowRunID == workflowRunID && !workflow_run.Completed && workflow.IsRemoved == false {
+			err = ops.ProcessWorkflowRunSync(workflow_id, &workflowRunID, workflow, r)
+			if err != nil {
+				return false, err
+			}
+		}
+
+	}
+
+	return true, nil
 }

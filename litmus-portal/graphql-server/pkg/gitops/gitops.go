@@ -208,7 +208,7 @@ func (c GitConfig) getAuthMethod() (transport.AuthMethod, error) {
 		return nil, nil
 
 	default:
-		return nil, errors.New("No Mathcing Auth Type Found")
+		return nil, errors.New("No Matching Auth Type Found")
 	}
 }
 
@@ -675,5 +675,11 @@ func deleteWorkflow(file string, config GitConfig) error {
 	_, fileName := filepath.Split(file)
 	fileName = strings.Replace(fileName, ".yaml", "", -1)
 
-	return ops.ProcessWorkflowDelete(bson.D{{"workflow_name", fileName}, {"project_id", config.ProjectID}}, store.Store)
+	query := bson.D{{"workflow_name", fileName}, {"project_id", config.ProjectID}}
+	workflow, err := dbOperationsWorkflow.GetWorkflow(query)
+	if err != nil {
+		return err
+	}
+
+	return ops.ProcessWorkflowDelete(query, workflow, store.Store)
 }

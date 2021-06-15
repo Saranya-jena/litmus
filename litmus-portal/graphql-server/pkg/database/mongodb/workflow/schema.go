@@ -43,14 +43,15 @@ type ChaosWorkflowRun struct {
 	TotalExperiments  *int     `bson:"total_experiments,string,omitempty"`
 	ExecutionData     string   `bson:"execution_data"`
 	Completed         bool     `bson:"completed"`
+	IsRemoved         *bool    `bson:"isRemoved"`
 }
 
 type AggregatedWorkflowRuns struct {
-	TotalFilteredWorkflowRuns []TotalFilteredWorkflowRuns `bson:"total_filtered_workflow_runs"`
-	FlattenedWorkflowRuns     []FlattenedWorkflowRun      `bson:"flattened_workflow_runs"`
+	TotalFilteredWorkflowRuns []TotalFilteredData    `bson:"total_filtered_workflow_runs"`
+	FlattenedWorkflowRuns     []FlattenedWorkflowRun `bson:"flattened_workflow_runs"`
 }
 
-type TotalFilteredWorkflowRuns struct {
+type TotalFilteredData struct {
 	Count int `bson:"count"`
 }
 
@@ -70,4 +71,9 @@ type FlattenedWorkflowRun struct {
 	ClusterType         string             `bson:"cluster_type"`
 	WorkflowRuns        ChaosWorkflowRun   `bson:"workflow_runs"`
 	IsRemoved           bool               `bson:"isRemoved"`
+}
+
+type AggregatedWorkflows struct {
+	TotalFilteredWorkflows []TotalFilteredData  `bson:"total_filtered_workflows"`
+	ScheduledWorkflows     []ChaosWorkFlowInput `bson:"scheduled_workflows"`
 }

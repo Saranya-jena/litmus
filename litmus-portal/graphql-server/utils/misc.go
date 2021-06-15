@@ -47,13 +47,13 @@ func ManifestParser(cluster dbSchemaCluster.Cluster, rootPath string, subscriber
 		cluster.AgentSaExists = &defaultState
 	}
 
-	if !*cluster.AgentNsExists && cluster.AgentNamespace != nil && *cluster.AgentNamespace != "" {
+	if cluster.AgentNamespace != nil && *cluster.AgentNamespace != "" {
 		AgentNamespace = *cluster.AgentNamespace
 	} else {
 		AgentNamespace = DefaultAgentNamespace
 	}
 
-	if !*cluster.AgentSaExists && cluster.Serviceaccount != nil && *cluster.Serviceaccount != "" {
+	if cluster.Serviceaccount != nil && *cluster.Serviceaccount != "" {
 		ServiceAccountName = *cluster.Serviceaccount
 	} else {
 		ServiceAccountName = DefaultServiceAccountName
@@ -102,7 +102,6 @@ func ManifestParser(cluster dbSchemaCluster.Cluster, rootPath string, subscriber
 		newContent = strings.Replace(newContent, "#{AGENT-NAMESPACE}", AgentNamespace, -1)
 		newContent = strings.Replace(newContent, "#{SUBSCRIBER-SERVICE-ACCOUNT}", ServiceAccountName, -1)
 		newContent = strings.Replace(newContent, "#{AGENT-SCOPE}", cluster.AgentScope, -1)
-		newContent = strings.Replace(newContent, "#{ARGO-SERVER}", subscriberConfig.ArgoServerImage, -1)
 		newContent = strings.Replace(newContent, "#{ARGO-WORKFLOW-CONTROLLER}", subscriberConfig.WorkflowControllerImage, -1)
 		newContent = strings.Replace(newContent, "#{LITMUS-CHAOS-OPERATOR}", subscriberConfig.ChaosOperatorImage, -1)
 		newContent = strings.Replace(newContent, "#{ARGO-WORKFLOW-EXECUTOR}", subscriberConfig.WorkflowExecutorImage, -1)
@@ -114,4 +113,15 @@ func ManifestParser(cluster dbSchemaCluster.Cluster, rootPath string, subscriber
 	}
 
 	return []byte(strings.Join(generatedYAML, "\n")), nil
+}
+
+// ContainsString checks if a string is present in an array of strings
+func ContainsString(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
 }

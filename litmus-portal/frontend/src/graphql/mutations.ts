@@ -89,12 +89,6 @@ export const DECLINE_INVITE = gql`
   }
 `;
 
-export const DELETE_SCHEDULE = gql`
-  mutation deleteWorkflow($workflow_id: String!) {
-    deleteChaosWorkflow(workflowid: $workflow_id)
-  }
-`;
-
 export const UPDATE_SCHEDULE = gql`
   mutation updateChaos($ChaosWorkFlowInput: ChaosWorkFlowInput!) {
     updateChaosWorkflow(input: $ChaosWorkFlowInput) {
@@ -264,13 +258,15 @@ export const DELETE_DATASOURCE = gql`
 
 export const CREATE_DASHBOARD = gql`
   mutation createDashBoard($createDBInput: createDBInput) {
-    createDashBoard(dashboard: $createDBInput)
+    createDashBoard(dashboard: $createDBInput) {
+      db_id
+    }
   }
 `;
 
 export const UPDATE_DASHBOARD = gql`
-  mutation updateDashboard($updataDBInput: updataDBInput) {
-    updateDashboard(dashboard: $updataDBInput)
+  mutation updateDashboard($updateDBInput: updateDBInput) {
+    updateDashboard(dashboard: $updateDBInput)
   }
 `;
 
@@ -321,5 +317,20 @@ export const UPDATE_IMAGE_REGISTRY = gql`
         image_registry_type
       }
     }
+  }
+`;
+
+export const SYNC_WORKFLOW = gql`
+  mutation syncWorkflow($workflowid: String!, $workflow_run_id: String!) {
+    syncWorkflow(workflowid: $workflowid, workflow_run_id: $workflow_run_id)
+  }
+`;
+
+export const DELETE_WORKFLOW = gql`
+  mutation deleteWorkflow($workflowid: String!, $workflow_run_id: String!) {
+    deleteChaosWorkflow(
+      workflowid: $workflowid
+      workflow_run_id: $workflow_run_id
+    )
   }
 `;

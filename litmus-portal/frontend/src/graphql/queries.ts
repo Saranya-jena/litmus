@@ -14,6 +14,7 @@ export const WORKFLOW_DETAILS_WITH_EXEC_DATA = gql`
         phase
         execution_data
         resiliency_score
+        isRemoved
       }
     }
   }
@@ -33,59 +34,56 @@ export const WORKFLOW_DETAILS = gql`
         resiliency_score
         experiments_passed
         total_experiments
+        isRemoved
       }
     }
   }
 `;
 
-export const SCHEDULE_DETAILS = gql`
-  query scheduleDetails($projectID: String!) {
-    getScheduledWorkflows(project_id: $projectID) {
-      workflow_id
-      workflow_manifest
-      cronSyntax
-      workflow_name
-      workflow_description
-      weightages {
-        experiment_name
-        weightage
-      }
-      isCustomWorkflow
-      updated_at
-      created_at
-      project_id
-      cluster_id
-      cluster_type
-      cluster_name
-      isRemoved
+export const WORKFLOW_STATS = gql`
+  query getScheduledWorkflowStats(
+    $filter: TimeFrequency!
+    $project_id: String!
+    $show_workflow_runs: Boolean!
+  ) {
+    getScheduledWorkflowStats(
+      filter: $filter
+      project_id: $project_id
+      show_workflow_runs: $show_workflow_runs
+    ) {
+      date
+      value
     }
   }
 `;
 
 export const WORKFLOW_LIST_DETAILS = gql`
-  query workflowListDetails($projectID: String!, $workflowIDs: [ID]) {
-    ListWorkflow(project_id: $projectID, workflow_ids: $workflowIDs) {
-      workflow_id
-      workflow_manifest
-      cronSyntax
-      cluster_name
-      workflow_name
-      workflow_description
-      weightages {
-        experiment_name
-        weightage
-      }
-      isCustomWorkflow
-      updated_at
-      created_at
-      project_id
-      cluster_id
-      cluster_type
-      isRemoved
-      workflow_runs {
-        execution_data
-        workflow_run_id
-        last_updated
+  query workflowListDetails($workflowInput: ListWorkflowsInput!) {
+    ListWorkflow(workflowInput: $workflowInput) {
+      total_no_of_workflows
+      workflows {
+        workflow_id
+        workflow_manifest
+        cronSyntax
+        cluster_name
+        workflow_name
+        workflow_description
+        weightages {
+          experiment_name
+          weightage
+        }
+        isCustomWorkflow
+        updated_at
+        created_at
+        project_id
+        cluster_id
+        cluster_type
+        isRemoved
+        workflow_runs {
+          execution_data
+          workflow_run_id
+          last_updated
+        }
       }
     }
   }
@@ -388,19 +386,39 @@ export const LIST_DATASOURCE = gql`
   }
 `;
 
+export const LIST_DATASOURCE_OVERVIEW = gql`
+  query listDataSource($projectID: String!) {
+    ListDataSource(project_id: $projectID) {
+      ds_id
+    }
+  }
+`;
+
 export const LIST_DASHBOARD = gql`
   query listDashboard($projectID: String!) {
     ListDashboard(project_id: $projectID) {
       db_id
       ds_id
       db_name
-      db_type
       cluster_name
       ds_name
       ds_type
+      db_type_id
+      db_type_name
+      db_information
+      chaos_event_query_template
+      chaos_verdict_query_template
+      application_metadata_map {
+        namespace
+        applications {
+          kind
+          names
+        }
+      }
       panel_groups {
         panels {
           panel_id
+          created_at
           prom_queries {
             queryid
             prom_query_name
@@ -431,6 +449,57 @@ export const LIST_DASHBOARD = gql`
       cluster_id
       created_at
       updated_at
+    }
+  }
+`;
+
+export const LIST_DASHBOARD_OVERVIEW = gql`
+  query listDashboard($projectID: String!) {
+    ListDashboard(project_id: $projectID) {
+      db_id
+      db_name
+      db_type_id
+      db_type_name
+      cluster_name
+      cluster_id
+      updated_at
+      db_information
+      chaos_event_query_template
+      chaos_verdict_query_template
+      application_metadata_map {
+        namespace
+        applications {
+          kind
+          names
+        }
+      }
+      panel_groups {
+        panels {
+          panel_id
+          created_at
+          prom_queries {
+            queryid
+            prom_query_name
+            legend
+            resolution
+            minstep
+            line
+            close_area
+          }
+          panel_options {
+            points
+            grids
+            left_axis
+          }
+          panel_name
+          y_axis_left
+          y_axis_right
+          x_axis_down
+          unit
+        }
+        panel_group_name
+        panel_group_id
+      }
     }
   }
 `;

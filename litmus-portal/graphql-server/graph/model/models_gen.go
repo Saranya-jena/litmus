@@ -220,7 +220,7 @@ type GetWorkflowRunsInput struct {
 	ProjectID      string                  `json:"project_id"`
 	WorkflowRunIds []*string               `json:"workflow_run_ids"`
 	Pagination     *Pagination             `json:"pagination"`
-	Sort           *SortInput              `json:"sort"`
+	Sort           *WorkflowRunSortInput   `json:"sort"`
 	Filter         *WorkflowRunFilterInput `json:"filter"`
 }
 
@@ -287,6 +287,19 @@ type KubeObjectResponse struct {
 type Link struct {
 	Name string `json:"Name"`
 	URL  string `json:"Url"`
+}
+
+type ListWorkflowsInput struct {
+	ProjectID   string               `json:"project_id"`
+	WorkflowIds []*string            `json:"workflow_ids"`
+	Pagination  *Pagination          `json:"pagination"`
+	Sort        *WorkflowSortInput   `json:"sort"`
+	Filter      *WorkflowFilterInput `json:"filter"`
+}
+
+type ListWorkflowsOutput struct {
+	TotalNoOfWorkflows int         `json:"total_no_of_workflows"`
+	Workflows          []*Workflow `json:"workflows"`
 }
 
 type Maintainer struct {
@@ -438,11 +451,6 @@ type ScheduledWorkflows struct {
 	IsRemoved           bool          `json:"isRemoved"`
 }
 
-type SortInput struct {
-	Field      WorkflowRunSortingField `json:"field"`
-	Descending *bool                   `json:"descending"`
-}
-
 type Spec struct {
 	DisplayName         string        `json:"DisplayName"`
 	CategoryDescription string        `json:"CategoryDescription"`
@@ -508,7 +516,6 @@ type WeightagesInput struct {
 }
 
 type Workflow struct {
-	WorkflowType        string          `json:"workflow_type"`
 	WorkflowID          string          `json:"workflow_id"`
 	WorkflowManifest    string          `json:"workflow_manifest"`
 	CronSyntax          string          `json:"cronSyntax"`
@@ -526,6 +533,11 @@ type Workflow struct {
 	WorkflowRuns        []*WorkflowRuns `json:"workflow_runs"`
 }
 
+type WorkflowFilterInput struct {
+	WorkflowName *string `json:"workflow_name"`
+	ClusterName  *string `json:"cluster_name"`
+}
+
 type WorkflowRun struct {
 	WorkflowRunID     string   `json:"workflow_run_id"`
 	WorkflowID        string   `json:"workflow_id"`
@@ -540,6 +552,7 @@ type WorkflowRun struct {
 	ExperimentsPassed *int     `json:"experiments_passed"`
 	TotalExperiments  *int     `json:"total_experiments"`
 	ExecutionData     string   `json:"execution_data"`
+	IsRemoved         *bool    `json:"isRemoved"`
 }
 
 type WorkflowRunDetails struct {
@@ -561,6 +574,12 @@ type WorkflowRunInput struct {
 	ExecutionData string           `json:"execution_data"`
 	ClusterID     *ClusterIdentity `json:"cluster_id"`
 	Completed     bool             `json:"completed"`
+	IsRemoved     *bool            `json:"isRemoved"`
+}
+
+type WorkflowRunSortInput struct {
+	Field      WorkflowRunSortingField `json:"field"`
+	Descending *bool                   `json:"descending"`
 }
 
 type WorkflowRuns struct {
@@ -569,9 +588,14 @@ type WorkflowRuns struct {
 	LastUpdated   string `json:"last_updated"`
 }
 
-type WorkflowRunsData struct {
-	Value             float64             `json:"value"`
-	WorkflowRunDetail *WorkflowRunDetails `json:"workflowRunDetail"`
+type WorkflowSortInput struct {
+	Field      WorkflowSortingField `json:"field"`
+	Descending *bool                `json:"descending"`
+}
+
+type WorkflowStats struct {
+	Date  float64 `json:"date"`
+	Value int     `json:"value"`
 }
 
 type AnnotationsPromResponse struct {
@@ -585,6 +609,16 @@ type AnnotationsTimeStampValue struct {
 	Value *int     `json:"value"`
 }
 
+type ApplicationMetadata struct {
+	Namespace    string      `json:"namespace"`
+	Applications []*Resource `json:"applications"`
+}
+
+type ApplicationMetadataResponse struct {
+	Namespace    string              `json:"namespace"`
+	Applications []*ResourceResponse `json:"applications"`
+}
+
 type ClusterRegResponse struct {
 	Token       string `json:"token"`
 	ClusterID   string `json:"cluster_id"`
@@ -592,15 +626,20 @@ type ClusterRegResponse struct {
 }
 
 type CreateDBInput struct {
-	DsID        string        `json:"ds_id"`
-	DbName      string        `json:"db_name"`
-	DbType      string        `json:"db_type"`
-	PanelGroups []*PanelGroup `json:"panel_groups"`
-	EndTime     string        `json:"end_time"`
-	StartTime   string        `json:"start_time"`
-	ProjectID   string        `json:"project_id"`
-	ClusterID   string        `json:"cluster_id"`
-	RefreshRate string        `json:"refresh_rate"`
+	DsID                      string                 `json:"ds_id"`
+	DbName                    string                 `json:"db_name"`
+	DbTypeName                string                 `json:"db_type_name"`
+	DbTypeID                  string                 `json:"db_type_id"`
+	DbInformation             *string                `json:"db_information"`
+	ChaosEventQueryTemplate   string                 `json:"chaos_event_query_template"`
+	ChaosVerdictQueryTemplate string                 `json:"chaos_verdict_query_template"`
+	ApplicationMetadataMap    []*ApplicationMetadata `json:"application_metadata_map"`
+	PanelGroups               []*PanelGroup          `json:"panel_groups"`
+	EndTime                   string                 `json:"end_time"`
+	StartTime                 string                 `json:"start_time"`
+	ProjectID                 string                 `json:"project_id"`
+	ClusterID                 string                 `json:"cluster_id"`
+	RefreshRate               string                 `json:"refresh_rate"`
 }
 
 type DeleteDSInput struct {
@@ -637,22 +676,27 @@ type LabelValue struct {
 	Values []*Option `json:"values"`
 }
 
-type ListDashboardReponse struct {
-	DsID        string                `json:"ds_id"`
-	DbID        string                `json:"db_id"`
-	DbName      string                `json:"db_name"`
-	DbType      string                `json:"db_type"`
-	ClusterName *string               `json:"cluster_name"`
-	DsName      *string               `json:"ds_name"`
-	DsType      *string               `json:"ds_type"`
-	PanelGroups []*PanelGroupResponse `json:"panel_groups"`
-	EndTime     string                `json:"end_time"`
-	StartTime   string                `json:"start_time"`
-	RefreshRate string                `json:"refresh_rate"`
-	ProjectID   string                `json:"project_id"`
-	ClusterID   string                `json:"cluster_id"`
-	CreatedAt   *string               `json:"created_at"`
-	UpdatedAt   *string               `json:"updated_at"`
+type ListDashboardResponse struct {
+	DsID                      string                         `json:"ds_id"`
+	DbID                      string                         `json:"db_id"`
+	DbName                    string                         `json:"db_name"`
+	DbTypeID                  string                         `json:"db_type_id"`
+	DbTypeName                string                         `json:"db_type_name"`
+	DbInformation             *string                        `json:"db_information"`
+	ChaosEventQueryTemplate   string                         `json:"chaos_event_query_template"`
+	ChaosVerdictQueryTemplate string                         `json:"chaos_verdict_query_template"`
+	ApplicationMetadataMap    []*ApplicationMetadataResponse `json:"application_metadata_map"`
+	ClusterName               *string                        `json:"cluster_name"`
+	DsName                    *string                        `json:"ds_name"`
+	DsType                    *string                        `json:"ds_type"`
+	PanelGroups               []*PanelGroupResponse          `json:"panel_groups"`
+	EndTime                   string                         `json:"end_time"`
+	StartTime                 string                         `json:"start_time"`
+	RefreshRate               string                         `json:"refresh_rate"`
+	ProjectID                 string                         `json:"project_id"`
+	ClusterID                 string                         `json:"cluster_id"`
+	CreatedAt                 *string                        `json:"created_at"`
+	UpdatedAt                 *string                        `json:"updated_at"`
 }
 
 type MetricsPromResponse struct {
@@ -678,6 +722,7 @@ type Panel struct {
 	XAxisDown    *string      `json:"x_axis_down"`
 	Unit         *string      `json:"unit"`
 	PanelGroupID *string      `json:"panel_group_id"`
+	CreatedAt    *string      `json:"created_at"`
 	PromQueries  []*PromQuery `json:"prom_queries"`
 	PanelOptions *PanelOption `json:"panel_options"`
 	PanelName    string       `json:"panel_name"`
@@ -715,6 +760,7 @@ type PanelResponse struct {
 	PromQueries  []*PromQueryResponse `json:"prom_queries"`
 	PanelOptions *PanelOptionResponse `json:"panel_options"`
 	PanelName    *string              `json:"panel_name"`
+	CreatedAt    *string              `json:"created_at"`
 }
 
 type PromInput struct {
@@ -769,20 +815,37 @@ type PromSeriesResponse struct {
 	LabelValues []*LabelValue `json:"labelValues"`
 }
 
-type UpdataDBInput struct {
-	DbID        string                   `json:"db_id"`
-	DsID        string                   `json:"ds_id"`
-	DbName      string                   `json:"db_name"`
-	DbType      string                   `json:"db_type"`
-	EndTime     string                   `json:"end_time"`
-	StartTime   string                   `json:"start_time"`
-	RefreshRate string                   `json:"refresh_rate"`
-	PanelGroups []*UpdatePanelGroupInput `json:"panel_groups"`
+type Resource struct {
+	Kind  string    `json:"kind"`
+	Names []*string `json:"names"`
+}
+
+type ResourceResponse struct {
+	Kind  string    `json:"kind"`
+	Names []*string `json:"names"`
+}
+
+type UpdateDBInput struct {
+	DbID                      string                   `json:"db_id"`
+	DsID                      string                   `json:"ds_id"`
+	DbName                    string                   `json:"db_name"`
+	DbTypeName                string                   `json:"db_type_name"`
+	DbTypeID                  string                   `json:"db_type_id"`
+	DbInformation             *string                  `json:"db_information"`
+	ChaosEventQueryTemplate   string                   `json:"chaos_event_query_template"`
+	ChaosVerdictQueryTemplate string                   `json:"chaos_verdict_query_template"`
+	ApplicationMetadataMap    []*ApplicationMetadata   `json:"application_metadata_map"`
+	PanelGroups               []*UpdatePanelGroupInput `json:"panel_groups"`
+	EndTime                   string                   `json:"end_time"`
+	StartTime                 string                   `json:"start_time"`
+	ClusterID                 string                   `json:"cluster_id"`
+	RefreshRate               string                   `json:"refresh_rate"`
 }
 
 type UpdatePanelGroupInput struct {
-	PanelGroupName string `json:"panel_group_name"`
-	PanelGroupID   string `json:"panel_group_id"`
+	PanelGroupName string   `json:"panel_group_name"`
+	PanelGroupID   string   `json:"panel_group_id"`
+	Panels         []*Panel `json:"panels"`
 }
 
 type Weightages struct {
@@ -878,6 +941,49 @@ func (e MemberRole) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 
+type TimeFrequency string
+
+const (
+	TimeFrequencyMonthly TimeFrequency = "Monthly"
+	TimeFrequencyWeekly  TimeFrequency = "Weekly"
+	TimeFrequencyHourly  TimeFrequency = "Hourly"
+)
+
+var AllTimeFrequency = []TimeFrequency{
+	TimeFrequencyMonthly,
+	TimeFrequencyWeekly,
+	TimeFrequencyHourly,
+}
+
+func (e TimeFrequency) IsValid() bool {
+	switch e {
+	case TimeFrequencyMonthly, TimeFrequencyWeekly, TimeFrequencyHourly:
+		return true
+	}
+	return false
+}
+
+func (e TimeFrequency) String() string {
+	return string(e)
+}
+
+func (e *TimeFrequency) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = TimeFrequency(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid TimeFrequency", str)
+	}
+	return nil
+}
+
+func (e TimeFrequency) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
 type WorkflowRunSortingField string
 
 const (
@@ -961,5 +1067,44 @@ func (e *WorkflowRunStatus) UnmarshalGQL(v interface{}) error {
 }
 
 func (e WorkflowRunStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type WorkflowSortingField string
+
+const (
+	WorkflowSortingFieldName WorkflowSortingField = "Name"
+)
+
+var AllWorkflowSortingField = []WorkflowSortingField{
+	WorkflowSortingFieldName,
+}
+
+func (e WorkflowSortingField) IsValid() bool {
+	switch e {
+	case WorkflowSortingFieldName:
+		return true
+	}
+	return false
+}
+
+func (e WorkflowSortingField) String() string {
+	return string(e)
+}
+
+func (e *WorkflowSortingField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = WorkflowSortingField(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid WorkflowSortingField", str)
+	}
+	return nil
+}
+
+func (e WorkflowSortingField) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }

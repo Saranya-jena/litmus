@@ -60,6 +60,7 @@ func UpdateWorkflowRun(workflowID string, wfRun ChaosWorkflowRun) (int, error) {
 				{"workflow_runs.$.total_experiments", wfRun.TotalExperiments},
 				{"workflow_runs.$.execution_data", wfRun.ExecutionData},
 				{"workflow_runs.$.completed", wfRun.Completed},
+				{"workflow_runs.$.isRemoved", wfRun.IsRemoved},
 			}}}
 
 		result, err := mongodb.Operator.Update(ctx, mongodb.WorkflowCollection, query, update)
@@ -88,6 +89,25 @@ func GetWorkflows(query bson.D) ([]ChaosWorkFlowInput, error) {
 	}
 
 	return workflows, nil
+}
+
+// GetWorkflow takes a query parameter to retrieve the workflow details from the database
+func GetWorkflow(query bson.D) (ChaosWorkFlowInput, error) {
+
+	ctx, _ := context.WithTimeout(backgroundContext, 10*time.Second)
+
+	var workflow ChaosWorkFlowInput
+	results, err := mongodb.Operator.Get(ctx, mongodb.WorkflowCollection, query)
+	if err != nil {
+		return ChaosWorkFlowInput{}, err
+	}
+
+	err = results.Decode(&workflow)
+	if err != nil {
+		return ChaosWorkFlowInput{}, err
+	}
+
+	return workflow, nil
 }
 
 // GetAggregateWorkflows takes a mongo pipeline to retrieve the workflow details from the database

@@ -82,10 +82,6 @@ const TableData: React.FC<TableDataProps> = ({ data }) => {
   const onDashboardLoadRoutine = async () => {
     dashboard.selectDashboard({
       selectedDashboardID: data.db_id,
-      selectedDashboardName: data.db_name,
-      selectedDashboardTemplateName: data.db_type,
-      selectedAgentID: data.cluster_id,
-      selectedAgentName: data.cluster_name,
       refreshRate: 0,
     });
     dataSource.selectDataSource({
@@ -128,7 +124,7 @@ const TableData: React.FC<TableDataProps> = ({ data }) => {
 
       <StyledTableCell className={classes.tableHeader}>
         <Typography variant="body2" align="center">
-          <strong>{data.db_type}</strong>
+          <strong>{data.db_type_name}</strong>
         </Typography>
       </StyledTableCell>
 
@@ -175,7 +171,7 @@ const TableData: React.FC<TableDataProps> = ({ data }) => {
           >
             <div className={classes.expDiv}>
               <img
-                src="./icons/analytics.svg"
+                src="/icons/analytics.svg"
                 alt="See Analytics"
                 className={classes.btnImg}
               />
@@ -190,17 +186,9 @@ const TableData: React.FC<TableDataProps> = ({ data }) => {
           <MenuItem
             value="Configure"
             onClick={() => {
-              const dashboardType: string = data.db_type;
-              let dashboardTemplateID: number = -1;
-              if (dashboardType === 'Kubernetes Platform') {
-                dashboardTemplateID = 0;
-              } else if (dashboardType === 'Sock Shop') {
-                dashboardTemplateID = 1;
-              }
               dashboard.selectDashboard({
                 selectedDashboardID: data.db_id,
-                selectedDashboardName: data.db_name,
-                selectedDashboardTemplateID: dashboardTemplateID,
+                activePanelID: '',
               });
               history.push({
                 pathname: '/analytics/dashboard/configure',
@@ -211,7 +199,7 @@ const TableData: React.FC<TableDataProps> = ({ data }) => {
           >
             <div className={classes.expDiv}>
               <img
-                src="./icons/cogwheel.svg"
+                src="/icons/cogwheel.svg"
                 alt="Configure"
                 className={classes.btnImg}
               />
@@ -238,7 +226,7 @@ const TableData: React.FC<TableDataProps> = ({ data }) => {
           >
             <div className={classes.expDiv}>
               <img
-                src="./icons/delete.svg"
+                src="/icons/delete.svg"
                 alt="Delete"
                 className={classes.btnImg}
               />
@@ -274,7 +262,7 @@ const TableData: React.FC<TableDataProps> = ({ data }) => {
             <Typography align="center">
               {success === true ? (
                 <img
-                  src="./icons/finish.svg"
+                  src="/icons/finish.svg"
                   alt="success"
                   className={classes.icon}
                 />
@@ -362,7 +350,7 @@ const TableData: React.FC<TableDataProps> = ({ data }) => {
             <div>
               <Typography align="center">
                 <img
-                  src="./icons/delete_large_icon.svg"
+                  src="/icons/delete_large_icon.svg"
                   alt="delete"
                   className={classes.icon}
                 />

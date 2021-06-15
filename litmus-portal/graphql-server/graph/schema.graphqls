@@ -121,6 +121,7 @@ input WorkflowRunInput {
   execution_data: String!
   cluster_id: ClusterIdentity!
   completed: Boolean!
+  isRemoved: Boolean
 }
 
 type PodLogResponse {
@@ -166,25 +167,6 @@ type ScheduledWorkflows {
   cluster_id: ID!
   cluster_type: String!
   isRemoved: Boolean!
-}
-
-type Workflow {
-  workflow_type: String!
-  workflow_id: String!
-  workflow_manifest: String!
-  cronSyntax: String!
-  cluster_name: String!
-  workflow_name: String!
-  workflow_description: String!
-  weightages: [weightages!]!
-  isCustomWorkflow: Boolean!
-  updated_at: String!
-  created_at: String!
-  project_id: ID!
-  cluster_id: ID!
-  cluster_type: String!
-  isRemoved: Boolean!
-  workflow_runs: [WorkflowRuns]
 }
 
 type WorkflowRuns {
@@ -286,10 +268,14 @@ type Query {
 
   users: [User!]! @authorized
 
-  # [Deprecated soon]
-  getScheduledWorkflows(project_id: String!): [ScheduledWorkflows]! @authorized
+  getScheduledWorkflowStats(
+    project_id: String!
+    filter: TimeFrequency!
+    show_workflow_runs: Boolean!
+  ): [WorkflowStats]! @authorized
 
-  ListWorkflow(project_id: String!, workflow_ids: [ID]): [Workflow]! @authorized
+  ListWorkflow(workflowInput: ListWorkflowsInput!): ListWorkflowsOutput!
+    @authorized
 
   getCharts(HubName: String!, projectID: String!): [Chart!]! @authorized
 
@@ -312,7 +298,7 @@ type Query {
 
   GetPromSeriesList(ds_details: dsDetails): promSeriesListResponse! @authorized
 
-  ListDashboard(project_id: String!): [listDashboardReponse] @authorized
+  ListDashboard(project_id: String!): [listDashboardResponse] @authorized
 
   # Git Ops
   getGitOpsDetails(project_id: String!): GitConfigResponse! @authorized
@@ -335,12 +321,6 @@ type Mutation {
   #It is used to create external cluster.
   userClusterReg(clusterInput: ClusterInput!): clusterRegResponse! @authorized
 
-  #It is used to create chaosworkflow
-  createChaosWorkFlow(input: ChaosWorkFlowInput!): ChaosWorkFlowResponse!
-    @authorized
-
-  reRunChaosWorkFlow(workflowID: String!): String! @authorized
-
   createUser(user: CreateUserInput!): User! @authorized
 
   #It is used to create a project
@@ -348,7 +328,18 @@ type Mutation {
 
   updateUser(user: UpdateUserInput!): String! @authorized
 
-  deleteChaosWorkflow(workflowid: String!): Boolean! @authorized
+  ## Workflow APIs
+  # It is used to create chaosworkflow
+  createChaosWorkFlow(input: ChaosWorkFlowInput!): ChaosWorkFlowResponse!
+    @authorized
+
+  reRunChaosWorkFlow(workflowID: String!): String! @authorized
+
+  deleteChaosWorkflow(workflowid: String, workflow_run_id: String): Boolean!
+    @authorized
+
+  syncWorkflow(workflowid: String!, workflow_run_id: String!): Boolean!
+    @authorized
 
   #Used for sending invitation
   sendInvitation(member: MemberInput!): Member @authorized
@@ -410,11 +401,11 @@ type Mutation {
   # Analytics
   createDataSource(datasource: DSInput): DSResponse @authorized
 
-  createDashBoard(dashboard: createDBInput): String! @authorized
+  createDashBoard(dashboard: createDBInput): listDashboardResponse! @authorized
 
   updateDataSource(datasource: DSInput!): DSResponse! @authorized
 
-  updateDashboard(dashboard: updataDBInput): String! @authorized
+  updateDashboard(dashboard: updateDBInput): String! @authorized
 
   updatePanel(panelInput: [panel]): String! @authorized
 
