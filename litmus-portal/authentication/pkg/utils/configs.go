@@ -24,7 +24,9 @@ var (
 	DBName                 = "auth"
 	Port                   = ":3000"
 	CollectionName         = "usercredentials"
+	ProjectCollection      = "project"
 	UsernameField          = "username"
+	ProjectName            = "name"
 	PasswordEncryptionCost = 15
 )
 

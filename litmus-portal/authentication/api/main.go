@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"litmus/litmus-portal/authentication/api/routes"
 	"litmus/litmus-portal/authentication/pkg/entities"
+	"litmus/litmus-portal/authentication/pkg/project"
 	"litmus/litmus-portal/authentication/pkg/user"
 	"litmus/litmus-portal/authentication/pkg/utils"
 	"runtime"
@@ -63,6 +64,14 @@ func main() {
 	userService := user.NewService(userRepo)
 	validatedAdminSetup(userService)
 
+	err = utils.CreateIndex(utils.ProjectCollection, utils.ProjectName, db)
+	if err != nil {
+		log.Fatalf("failed to create index  %s", err)
+	}
+
+	projectCollection := db.Collection((utils.ProjectCollection))
+	projectRepo := project.NewRepo(projectCollection)
+	projectService := project.NewService(projectRepo)
 	gin.SetMode(gin.ReleaseMode)
 	gin.EnableJsonDecoderDisallowUnknownFields()
 	app := gin.Default()
@@ -76,6 +85,7 @@ func main() {
 		routes.DexRouter(app, userService)
 	}
 	routes.UserRouter(app, userService)
+	routes.ProjectRouter(app, projectService)
 	err = app.Run(utils.Port)
 	if err != nil {
 		log.Fatalf("Failure to start litmus-portal authentication server due to %s", err)

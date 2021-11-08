@@ -1,13 +1,15 @@
 package user
 
 import (
+	"fmt"
 	"litmus/litmus-portal/authentication/pkg/entities"
 )
 
 // Service creates a service for user authentication operations
 type Service interface {
 	LoginUser(user *entities.User) (*entities.User, error)
-	FindUser(username string) (*entities.User, error)
+	FindUserByUsername(username string) (*entities.User, error)
+	FindUsersByUID(uid []string) (*[]entities.User, error)
 	CheckPasswordHash(hash, password string) error
 	UpdatePassword(userPassword *entities.UserPassword, isAdminBeingReset bool) error
 	CreateUser(user *entities.User) (*entities.User, error)
@@ -27,9 +29,15 @@ func (s service) LoginUser(user *entities.User) (*entities.User, error) {
 	return s.repository.LoginUser(user)
 }
 
-// FindUser is the definition of finding an user from database
-func (s service) FindUser(username string) (*entities.User, error) {
-	return s.repository.FindUser(username)
+// FindUserByUsername is the definition of finding an user from database
+func (s service) FindUserByUsername(username string) (*entities.User, error) {
+	return s.repository.FindUserByUsername(username)
+}
+
+// FindUsersByUID is the definition of finding an user from database
+func (s service) FindUsersByUID(uid []string) (*[]entities.User, error) {
+	fmt.Println("hello")
+	return s.repository.FindUsersByUID(uid)
 }
 
 // CheckPasswordHash checks if hashed password matches with the input password

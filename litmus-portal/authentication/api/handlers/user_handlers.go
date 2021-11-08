@@ -153,7 +153,7 @@ func LoginUser(service user.Service) gin.HandlerFunc {
 		}
 
 		// Checking if user exists
-		user, err := service.FindUser(userRequest.UserName)
+		user, err := service.FindUserByUsername(userRequest.UserName)
 		if err != nil {
 			log.Error(err)
 			c.JSON(utils.ErrorStatusCodes[utils.ErrUserNotFound], presenter.CreateErrorResponse(utils.ErrUserNotFound))
@@ -289,7 +289,7 @@ func UpdateUserState(service user.Service) gin.HandlerFunc {
 		}
 
 		// Checking if user exists
-		user, err := service.FindUser(userRequest.Username)
+		user, err := service.FindUserByUsername(userRequest.Username)
 		if err != nil {
 			log.Error(err)
 			c.JSON(utils.ErrorStatusCodes[utils.ErrUserNotFound], presenter.CreateErrorResponse(utils.ErrUserNotFound))

@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 	"litmus/litmus-portal/authentication/pkg/entities"
 	"litmus/litmus-portal/authentication/pkg/utils"
 	"strconv"
@@ -17,7 +18,8 @@ import (
 //Repository holds the mongo database implementation of the Service
 type Repository interface {
 	LoginUser(user *entities.User) (*entities.User, error)
-	FindUser(username string) (*entities.User, error)
+	FindUserByUsername(username string) (*entities.User, error)
+	FindUsersByUID(uid []string) (*[]entities.User, error)
 	CheckPasswordHash(hash, password string) error
 	UpdatePassword(userPassword *entities.UserPassword, isAdminBeingReset bool) error
 	CreateUser(user *entities.User) (*entities.User, error)
@@ -57,8 +59,8 @@ func (r repository) LoginUser(user *entities.User) (*entities.User, error) {
 	return user.SanitizedUser(), nil
 }
 
-// FindUser finds and returns a user if it exists
-func (r repository) FindUser(username string) (*entities.User, error) {
+// FindUserByUsername finds and returns a user if it exists
+func (r repository) FindUserByUsername(username string) (*entities.User, error) {
 	var result = entities.User{}
 	findOneErr := r.Collection.FindOne(context.TODO(), bson.M{
 		"username": username,
@@ -68,6 +70,33 @@ func (r repository) FindUser(username string) (*entities.User, error) {
 		return nil, findOneErr
 	}
 	return &result, nil
+}
+
+// FindUsersByUID fetches the user from database that matches the passed uids
+func (r repository) FindUsersByUID(uid []string) (*[]entities.User, error) {
+	fmt.Println("inside1")
+
+	cursor, err := r.Collection.Find(context.Background(),
+		bson.D{
+			{"_id", bson.D{
+				{"$in", uid},
+			}},
+		})
+	fmt.Println("inside1")
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("inside2")
+
+	var Users = []entities.User{}
+	for cursor.Next(context.TODO()) {
+		var user entities.User
+		_ = cursor.Decode(&user)
+		Users = append(Users, *user.SanitizedUser())
+	}
+	fmt.Println("inside3")
+
+	return &Users, nil
 }
 
 // CheckPasswordHash checks password hash and password from user input
