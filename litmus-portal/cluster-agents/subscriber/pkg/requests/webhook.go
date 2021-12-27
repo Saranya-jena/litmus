@@ -56,6 +56,10 @@ func ClusterConnect(clusterData map[string]string) {
 		}
 
 		data, err = json.Marshal(payload)
+		if err != nil {
+			logrus.WithError(err).Fatal("failed to marshal message")
+		}
+
 		err = c.WriteMessage(websocket.TextMessage, data)
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to write message after start")
@@ -72,7 +76,8 @@ func ClusterConnect(clusterData map[string]string) {
 		var r types.RawData
 		err = json.Unmarshal(message, &r)
 		if err != nil {
-			logrus.WithError(err).Fatal("error un-marshaling request payload")
+			logrus.WithError(err).Error("error un-marshaling request payload")
+			continue
 		}
 
 		if r.Type == "connection_ack" {
@@ -82,12 +87,13 @@ func ClusterConnect(clusterData map[string]string) {
 			continue
 		}
 		if r.Payload.Errors != nil {
-			logrus.Fatal("graphql error : ", string(message))
+			logrus.Error("graphql error : ", string(message))
+			continue
 		}
 
 		err = RequestProcessor(clusterData, r)
 		if err != nil {
-			logrus.WithError(err).Fatal("error on processing request")
+			logrus.WithError(err).Error("error on processing request")
 		}
 	}
 }
