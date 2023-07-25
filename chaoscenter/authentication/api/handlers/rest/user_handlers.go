@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/litmuschaos/litmus/chaoscenter/authentication/api/presenter"
@@ -193,8 +192,11 @@ func LoginUser(service services.ApplicationService) gin.HandlerFunc {
 			newMember := &entities.Member{
 				UserID:     user.ID,
 				Role:       entities.RoleOwner,
+				Username:   user.Username,
+				Email:      user.Email,
+				Name:       user.Name,
 				Invitation: entities.AcceptedInvitation,
-				JoinedAt:   strconv.FormatInt(time.Now().Unix(), 10),
+				JoinedAt:   time.Now().Unix(),
 			}
 			var members []*entities.Member
 			members = append(members, newMember)

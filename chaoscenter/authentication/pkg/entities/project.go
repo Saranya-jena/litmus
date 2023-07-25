@@ -26,10 +26,17 @@ type ProjectStats struct {
 
 // Member contains the required fields to be stored in the database for a member
 type Member struct {
-	UserID     string     `bson:"user_id"`
-	Role       MemberRole `bson:"role"`
-	Invitation Invitation `bson:"invitation"`
-	JoinedAt   string     `bson:"joined_at"`
+	UserID     string     `bson:"user_id" json:"userID"`
+	Username   string     `bson:"username" json:"username"`
+	Email      string     `bson:"email" json:"email"`
+	Name       string     `bson:"name" json:"name"`
+	Role       MemberRole `bson:"role" json:"role"`
+	Invitation Invitation `bson:"invitation" json:"invitation"`
+	JoinedAt   int64      `bson:"joined_at" json:"joinedAt"`
+}
+
+type Members struct {
+	Members []*Member `bson:"members" json:"members"`
 }
 
 type ProjectInput struct {

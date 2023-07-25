@@ -2,7 +2,6 @@ package rest
 
 import (
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/litmuschaos/litmus/chaoscenter/authentication/api/presenter"
@@ -278,7 +277,7 @@ func CreateProject(service services.ApplicationService) gin.HandlerFunc {
 			UserID:     user.ID,
 			Role:       entities.RoleOwner,
 			Invitation: entities.AcceptedInvitation,
-			JoinedAt:   strconv.FormatInt(time.Now().Unix(), 10),
+			JoinedAt:   time.Now().Unix(),
 		}
 		var members []*entities.Member
 		members = append(members, newMember)
@@ -375,7 +374,7 @@ func SendInvitation(service services.ApplicationService) gin.HandlerFunc {
 			UserID:     user.ID,
 			Role:       *member.Role,
 			Invitation: entities.PendingInvitation,
-			JoinedAt:   strconv.FormatInt(time.Now().Unix(), 10),
+			JoinedAt:   time.Now().Unix(),
 		}
 
 		err = service.AddMember(member.ProjectID, newMember)

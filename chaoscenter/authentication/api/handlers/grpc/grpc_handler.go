@@ -62,7 +62,7 @@ func (s *ServerGrpc) GetProjectById(ctx context.Context,
 		projectMember.UserName = memberMap[member.UserID].UserName
 		projectMember.Invitation = string(member.Invitation)
 		projectMember.Uid = member.UserID
-		projectMember.JoinedAt = member.JoinedAt
+		projectMember.JoinedAt = strconv.FormatInt(member.JoinedAt, 10)
 		projectMembers = append(projectMembers, &projectMember)
 	}
 
